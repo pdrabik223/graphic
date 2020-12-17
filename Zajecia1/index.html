@@ -1,0 +1,89 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Zajecia pierwsze</title>
+    <style>
+        body {
+            margin: 0;
+        }
+        
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <script src="../JS/three.js"></script>
+    <script>
+        let scene = new THREE.Scene();
+        let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000); //Field of view, proporcje ekranu, jak blisko widzi kamera, jak daleko moze widziec
+        let renderer = new THREE.WebGLRenderer();
+
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        let geometry = new THREE.Geometry();
+        geometry.vertices.push(new THREE.Vector3(0, 0, -1));
+
+        let material = new THREE.PointsMaterial({
+            size: 1,
+            sizeAttenuation: true,
+            color: 0xff00ff
+        }); // sizeAttenuation uwzglednia kwestie kamery i perspektywy
+
+        let dot = new THREE.Points(geometry, material);
+
+        //DODAWANIE KROPKI
+
+        scene.add(dot);
+
+        camera.position.z = 2;
+
+        renderer.render(scene, camera);
+        console.log("lelelelelele");
+
+        //let pi = Math.PI;
+        //let radius=2;
+
+
+        //for (var j = 0; j < 360; j+=20)
+        //{
+        //geometry.vertices.push(new THREE.Vector3(Math.sin(j*(Math.PI/180))*radius, Math.cos(j*(Math.PI/180))*radius, 0));
+
+        // scene.add(dot);
+        //}
+
+        // for(var i=-1; i<1; i+=0.25)
+        // {
+        //     geometry.vertices.push(new THREE.Vector3((0 + radius*Math.cos((2*pi*i)/2)), (0 + radius*Math.sin((2*pi*i)/2)), 0));
+        //     scene.add(dot)
+        // }
+
+        //camera.position.z=5;
+        //renderer.render(scene,camera);
+
+
+        //ZROBIC KOLKO
+
+        //let animate = function(){
+        //     requestAnimationFrame(animate);
+
+        //     dot.rotation.x += 0.01;
+        //     dot.rotation.y += 0.01;
+        //     dot.rotation.z += 0.01;
+
+        //     renderer.render(scene, camera);
+        // };
+
+        // animate();
+    </script>
+
+
+
+
+</body>
+
+</html>

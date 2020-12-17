@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Zajecia 1</title>
+    <style>
+        body {
+            margin: 0;
+        }
+        
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <script src="three.js"></script>
+
+    <script>
+        let scene = new THREE.Scene();
+        let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000); //Field of view, proporcje ekranu, jak blisko widzi kamera, jak daleko moze widziec
+        let renderer = new THREE.WebGLRenderer();
+
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        let geometry = new THREE.Geometry();
+        geometry.vertices.push(new THREE.Vector3(0, 0, -1));
+
+        let material = new THREE.PointsMaterial({
+            size: 0.1,
+            sizeAttenuation: true,
+            color: 0xff00ff
+        }); // sizeAttenuation uwzglednia kwestie kamery i perspektywy
+
+        let dot = new THREE.Points(geometry, material);
+
+        //DODAWANIE KROPKI
+
+        scene.add(dot);
+
+        camera.position.z = 5;
+
+        renderer.render(scene, camera);
+    </script>
+
+</body>
+
+</html>
