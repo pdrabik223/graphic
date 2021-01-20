@@ -53,7 +53,7 @@ let decay = 0.1;
 let player_obj_geometry, player_obj_material;
 
 let sun, Arrakis, ziemia, vulkan, donut, weird_thing;
-let pivot_Arrakis, pivot_ziemia, pivot_vulkan, pivot_donut, pivot_weird_thing,pivot_moon;
+let pivot_Arrakis, pivot_ziemia, pivot_vulkan, pivot_donut, pivot_weird_thing,pivot_moon,pivot_sun;
 
 
 
@@ -110,7 +110,8 @@ function init() {
 	sun = new THREE.Mesh(new THREE.SphereGeometry(20, 20, 20, 20),
 		new THREE.MeshBasicMaterial({ color: 0xff3030 }));
 	scene.add(sun);
-	sun.position.set(0, 0, 0);
+	sun.position.set(5, 0, 0);
+	pivot_sun.position.set(0,0,0);
 
 
 	// diuna
@@ -197,7 +198,7 @@ function init() {
 
 
 angle_arrakis = 0;
-angle_ziemia = 0, angle_vulkan = 0, angle_donut = 0, angle_weird_thing = 0;
+angle_ziemia = 0, angle_vulkan = 0, angle_donut = 0, angle_weird_thing = 0,a;
 
 function render() {
 	
