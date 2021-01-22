@@ -1,4 +1,4 @@
-let scene, free_camera, asteroid_camera;
+let scene, free_camera, static_camera;
 let debug_mode = true;
 
 
@@ -66,7 +66,7 @@ let player_obj_geometry, player_obj_material;
 let sun, Arrakis, ziemia, vulkan, donut, weird_thing;
 let pivot_Arrakis, pivot_ziemia, pivot_vulkan, pivot_donut, pivot_weird_thing, pivot_moon, pivot_sun;
 
-
+let sprite;
 
 let cherry, moon;
 
@@ -74,9 +74,25 @@ let ancor_point;
 
 let cherry_group;
 
+const raycaster = new THREE.Raycaster();
+var mouse = new THREE.Vector2();
+var INTERSECTED;
+
+function onMouseMove(event) {
+
+	// calculate mouse position in normalized device coordinates
+	// (-1 to +1) for both components
+
+	mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+	mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+}
+
+
 let path = new THREE.Group();
 //scene.add(path);
 function init() {
+
 
 	scene = new THREE.Scene();
 
@@ -84,8 +100,11 @@ function init() {
 
 
 	free_camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+	static_camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+	static_camera.position.z = 0;
+	static_camera.position.x = -400;
+	static_camera.rotation.y -= 3.14 / 2;
 
-	asteroid_camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
 
 	free_camera.position.z = 100;
 
@@ -93,12 +112,12 @@ function init() {
 
 
 	scene.background = new THREE.CubeTextureLoader().setPath('/graphic/system_of_a_solar/textures/skybox/').load([
-		'XP.png',
-		'XN.png',
-		'YP.png',
-		'YN.png',
-		'ZP.png',
-		'ZN.png'
+		'px.png',
+		'nx.png',
+		'py.png',
+		'ny.png',
+		'pz.png',
+		'nz.png'
 	]);
 
 	renderer = new THREE.WebGLRenderer();
@@ -120,20 +139,31 @@ function init() {
 
 
 
+	const pint_light = new THREE.PointLight(0x777777, 5, 1000);
+	pint_light.position.set(0, 0, 0);
+	scene.add(pint_light);
+
 	//sun
 	sun = new THREE.Mesh(new THREE.SphereGeometry(20, 20, 20, 20),
-		new THREE.MeshBasicMaterial({ color: 0xff3030 }));
+		new THREE.MeshBasicMaterial({ map: loader.load('/graphic/system_of_a_solar/textures/sun.jpg') }));
 	scene.add(sun);
 	sun.position.set(5, 0, 0);
 	pivot_sun = new THREE.Object3D();
 	pivot_sun.position.set(0, 0, 0);
 
 
+	sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.TextureLoader().load('/graphic/system_of_a_solar/textures/sunGlow.png') }));
+	sprite.scale.set(150, 150, 1);
+	sprite.opacity = 0.6;
+	scene.add(sprite);
+
+
+
 	// diuna
 
 	Arrakis = new THREE.Mesh(
 		new THREE.SphereGeometry(10, 20, 20, 20),
-		new THREE.MeshBasicMaterial({ color: 0xff3030 }));
+		new THREE.MeshLambertMaterial({ cmap: loader.load('/graphic/system_of_a_solar/textures/marsMap.jpg') }));
 	scene.add(Arrakis);
 	Arrakis.position.set(30, 45, 0);
 
@@ -147,7 +177,7 @@ function init() {
 
 	ziemia = new THREE.Mesh(
 		new THREE.CylinderGeometry(10, 10, 1, 30),
-		new THREE.MeshBasicMaterial({ color: 0xff3030 }));
+		new THREE.MeshLambertMaterial({ map: loader.load('/graphic/system_of_a_solar/textures/earthmap1k.jpg') }));
 	scene.add(ziemia);
 	ziemia.position.set(60, 90, 0);
 	ziemia.rotation.z += Math.PI * 90 / 180;
@@ -158,7 +188,7 @@ function init() {
 
 	moon = new THREE.Mesh(
 		new THREE.SphereGeometry(2, 20, 20, 20),
-		new THREE.MeshBasicMaterial({ color: 0x0000ff }));
+		new THREE.MeshLambertMaterial({ map: loader.load('/graphic/system_of_a_solar/textures/moonmap4k.jpg') }));
 	scene.add(moon);
 	moon.position.set(50, 90, 0);
 
@@ -170,7 +200,7 @@ function init() {
 
 	vulkan = new THREE.Mesh(
 		new THREE.SphereGeometry(10, 20, 20, 20),
-		new THREE.MeshBasicMaterial({ color: 0xff3030 }));
+		new THREE.MeshLambertMaterial({ map: loader.load('/graphic/system_of_a_solar/textures/asteroidTest.jpg') }));
 	scene.add(vulkan);
 	vulkan.position.set(120, 120, 0);
 
@@ -181,8 +211,7 @@ function init() {
 
 	donut = new THREE.Mesh(
 		new THREE.TorusGeometry(10, 3, 16, 100),
-		new THREE.MeshBasicMaterial({ color: 0xff3030 }));
-
+		new THREE.MeshLambertMaterial({ map: loader.load('/graphic/system_of_a_solar/textures/saturnmap.jpg') }));
 	scene.add(donut);
 	donut.position.set(150, 180, 0);
 	pivot_donut = new THREE.Object3D();
@@ -194,9 +223,8 @@ function init() {
 
 	// weird_thing
 
-	weird_thing = new THREE.Mesh(
-		new THREE.SphereGeometry(10, 20, 20, 20),
-		new THREE.MeshBasicMaterial({ color: 0xff3030 }));
+	weird_thing = new THREE.Mesh(new THREE.TorusKnotBufferGeometry(13, 1, 64, 40),
+		new THREE.MeshLambertMaterial({ map: loader.load('/graphic/system_of_a_solar/textures/earthcloudmap.jpg') }));
 
 	scene.add(weird_thing);
 	weird_thing.position.set(150, 180, 0);
@@ -271,6 +299,21 @@ window.addEventListener('keydown', function (event) {
 	}
 }, false);
 
+document.onkeydown = function (key) {
+
+
+
+
+	key.preventDefault();
+
+	//console.log(key);
+	mouse.x = (key.clientX / window.innerWidth) * 2 - 1;
+	mouse.y = - (key.clientY / window.innerHeight) * 2 + 1;
+
+
+
+}
+
 
 
 angle_arrakis = 0;
@@ -279,17 +322,46 @@ angle_ziemia = 0, angle_vulkan = 0, angle_donut = 0, angle_weird_thing = 0, angl
 let planet_counter = 0;
 let frame_counter = 0;
 let step = 0.5;
+
 function render() {
 
+	{
+
+		raycaster.setFromCamera(mouse, free_camera);
+
+		const intersects = raycaster.intersectObjects(scene.children);
+
+		if (intersects.length > 0) {
+
+			if (INTERSECTED != intersects[0].object) {
+
+				//if (INTERSECTED) INTERSECTED.material.setColor(0x00ff00);
+
+				INTERSECTED = intersects[0].object;
+				//INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
+				//INTERSECTED.material.emissive.setHex(0xff0000);
+
+			}
+
+		} else {
+
+			//if (INTERSECTED) INTERSECTED.material.setColor(0x0000ff);
+
+			INTERSECTED = null;
+
+		}
+	}
 
 	{ // arbit calculation
 
 		angle_sun -= 0.6;
 		sun.position.copy(orbit(pivot_sun, sun, angle_sun, 0, 0));
-		sun.rotation.x += Math.random() / 10;
-		sun.rotation.z += Math.random() / 10;
-		sun.rotation.y += Math.random() / 10;
+		sun.rotation.x += Math.random() % 10 / 100;
+		sun.rotation.z += Math.random() % 10 / 100;
+		sun.rotation.y += Math.random() % 10 / 100;
 
+
+		sprite.position.copy(sun.position);
 
 		angle_arrakis += 0.1;
 		Arrakis.position.copy(orbit(pivot_Arrakis, Arrakis, angle_arrakis, 0, 0));
@@ -371,10 +443,15 @@ function render() {
 	}
 
 
-	renderer.render(scene, free_camera);
 
+
+
+	if (camera_counter % 2 == 0) renderer.render(scene, free_camera);
+	else renderer.render(scene, static_camera);
 
 	requestAnimationFrame(render);
+
+
 
 
 
@@ -382,6 +459,7 @@ function render() {
 }
 
 
+window.addEventListener('mousemove', onMouseMove, false);
 
 
 init();
