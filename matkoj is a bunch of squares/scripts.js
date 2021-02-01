@@ -98,6 +98,12 @@ function init() {
 
         box_array[i].material.color.set('black');
 
+        if (i % 2 == 0) {
+
+            box_array[i].opacity = 0.0;
+
+
+        }
         scene.add(box_array[box_array.length - 1]);
     }
 
