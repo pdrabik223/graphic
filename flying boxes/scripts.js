@@ -1,5 +1,5 @@
 let scene, free_camera, static_camera;
-let debug_mode = true;
+let debug_mode = false;
 
 
 
@@ -9,10 +9,12 @@ var mouse = new THREE.Vector2();
 
 const loader = new THREE.TextureLoader();
 
-let box_number = 8;
+let box_number = 40;
 let box_array = new Array();
+var box_collor_array = new Array();
 
-const radius = 10;
+
+const radius = 15;
 const alpha = Math.PI / (box_number / 2);
 
 
@@ -38,16 +40,6 @@ function orbit(pivot, object, angle) {
 
 }
 
-function onMouseMove(event) {
-
-    // calculate mouse position in normalized device coordinates
-    // (-1 to +1) for both components
-
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
-
-}
-
 
 function init() {
 
@@ -59,8 +51,8 @@ function init() {
     static_camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
 
     static_camera.position.z = 0;
-    static_camera.position.x = 90;
-    static_camera.rotation.y += 3.14 / 2;
+    static_camera.position.x = -110;
+    static_camera.rotation.y -= 3.14 / 2;
 
 
     free_camera.position.z = 100;
@@ -94,23 +86,47 @@ function init() {
 
 
 
+
     for (let i = 0; i < box_number; i++) {
 
         box_array.push(new THREE.Mesh(
-            new THREE.BoxGeometry(2, 2, 2),
-            new THREE.MeshBasicMaterial({ color: 0xffae00 })));
+            new THREE.BoxGeometry(Math.sqrt(box_number), Math.sqrt(box_number), Math.sqrt(box_number)),
+            new THREE.MeshBasicMaterial({ color: 0x5577ff, opacity: 0.7, transparent: true })));
 
         box_array[box_array.length - 1].position.set(-10, radius * Math.sin(alpha * i), radius * Math.cos(alpha * i));
 
+        if (i % 2 == 0) box_array[i].material.color.set('white');
+        else box_array[i].material.color.set('red');
 
         scene.add(box_array[box_array.length - 1]);
     }
 
 
 
+    for (var i = 0; i < box_number; i++) {
+        var red = sin_to_hex(i, 0 * Math.PI * 2 / 3); // 0   deg
+        var blue = sin_to_hex(i, 1 * Math.PI * 2 / 3); // 120 deg
+        var green = sin_to_hex(i, 2 * Math.PI * 2 / 3); // 240 deg
+
+        box_collor_array.push(new THREE.Color("rgb(" + parseInt(red, 16) + "," + parseInt(green, 16) + "," + parseInt(blue, 16) + ")"));
+    }
+
+    function sin_to_hex(i, phase) {
+        var sin = Math.sin(Math.PI / box_number * 2 * i + phase);
+        var int = Math.floor(sin * 127) + 128;
+        var hex = int.toString(16);
+
+        return hex.length === 1 ? "0" + hex : hex;
+    }
+
+
+
+
 
     let ambient = new THREE.AmbientLight(0x555555, 0.5);
     scene.add(ambient);
+
+
 
     render();
 }
@@ -120,7 +136,10 @@ let camera_counter = 0;
 window.addEventListener('keydown', function (event) {
     switch (event.keyCode) {
 
+        case 48:
 
+            scene.background.rotation.y += Math.Pi / 4;
+            break;
 
         case 32: //space
 
@@ -133,7 +152,49 @@ window.addEventListener('keydown', function (event) {
 
     }
 }, false);
+let mousex, mousey;
 
+
+console.log(box_collor_array);
+
+function onMouseMove(event) {
+
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+    if (camera_counter % 2 == 0) raycaster.setFromCamera(mouse, free_camera);
+    else raycaster.setFromCamera(mouse, static_camera);
+
+    var intersects = raycaster.intersectObjects(box_array);
+
+    if (intersects.length > 0) {
+
+
+        for (var i = 0; i < box_array.length; i++) {
+
+            if (intersects[0].object == box_array[i]) {
+
+                box_array[i].material.color.set(box_collor_array[i]);
+                return;
+
+
+            }
+        }
+
+    } else color = (1, 0, 0);
+
+
+}
+
+
+
+
+
+
+
+
+
+window.addEventListener('mousemove', onMouseMove, false);
 
 let anchor = new THREE.Vector3(10, 0, 0);
 let beta = 0.01;
